@@ -30,6 +30,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
     try {
       self.postMessage({ taskId, status: 'processing', progress: 0 } as WorkerResponse);
       
+      // 使用默认配置，通过优化 prompt 来改善抠图效果
       const result = await removeBackground(blob, {
         progress: (_key, current, total) => {
           if (isCancelled) {
