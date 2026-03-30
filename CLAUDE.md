@@ -424,5 +424,9 @@ venv\Scripts\python tests/performance_tests/load_test.py
   - 响应式布局测试（桌面、笔记本、平板、手机全部通过）
   - 编译检查通过，生产构建成功
 
+- **代码质量修复**: 修复ESLint和测试可移植性问题
+  - [ProgressDisplay组件](file:///d:/thought/emoj/emo-j/src/components/ProgressDisplay/ProgressDisplay.tsx): 优化useEffect依赖，使用useRef避免重复触发，配合精确的eslint-disable注释解决setState-in-effect警告
+  - [login_test.py](file:///d:/thought/emoj/tests/test_modules/login_test.py): 将硬编码URL `http://localhost:5173` 改为从环境变量`TEST_BASE_URL`读取，提高测试可移植性
+
 ### 2026-03-29 (修复)
 

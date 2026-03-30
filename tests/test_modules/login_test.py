@@ -7,6 +7,9 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+BASE_URL = os.getenv('TEST_BASE_URL', 'http://localhost:5173')
+
+
 def run_test(page) -> bool:
     """运行登录模块测试"""
     print("\n  [登录模块测试]")
@@ -37,7 +40,7 @@ def run_test(page) -> bool:
 def test_correct_password(page) -> bool:
     """LOGIN-001: 输入正确密码登录"""
     try:
-        page.goto("http://localhost:5173")
+        page.goto(BASE_URL)
         page.wait_for_load_state("networkidle")
 
         password_input = page.locator('input[type="password"]')
@@ -68,7 +71,7 @@ def test_correct_password(page) -> bool:
 def test_wrong_password(page) -> bool:
     """LOGIN-002: 输入错误密码登录"""
     try:
-        page.goto("http://localhost:5173")
+        page.goto(BASE_URL)
         page.wait_for_load_state("networkidle")
 
         page.evaluate("() => localStorage.removeItem('emo_j_login_time')")
@@ -97,7 +100,7 @@ def test_wrong_password(page) -> bool:
 def test_empty_password(page) -> bool:
     """LOGIN-003: 空密码提交"""
     try:
-        page.goto("http://localhost:5173")
+        page.goto(BASE_URL)
         page.wait_for_load_state("networkidle")
 
         page.evaluate("() => localStorage.removeItem('emo_j_login_time')")
@@ -128,7 +131,7 @@ def test_auto_login(page) -> bool:
     try:
         page.evaluate("() => localStorage.setItem('emo_j_login_time', Date.now().toString())")
 
-        page.goto("http://localhost:5173")
+        page.goto(BASE_URL)
         page.wait_for_timeout(1500)
 
         if page.locator('.navbar').count() > 0:

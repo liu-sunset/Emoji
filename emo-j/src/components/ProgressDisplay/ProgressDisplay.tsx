@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import './ProgressDisplay.css';
 
 export interface ProgressDisplayProps {
@@ -23,6 +23,7 @@ export function ProgressDisplay({
   onComplete
 }: ProgressDisplayProps) {
   const [showNotification, setShowNotification] = useState(false);
+  const hasCompletedRef = useRef(false);
   const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   const shouldShowComplete = useMemo(() => {
@@ -30,18 +31,15 @@ export function ProgressDisplay({
   }, [completed, total, isProcessing]);
 
   useEffect(() => {
-    if (shouldShowComplete) {
-      const timer = setTimeout(() => setShowNotification(false), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [shouldShowComplete]);
-
-  useEffect(() => {
-    if (shouldShowComplete) {
-      /* eslint-disable react-hooks/set-state-in-effect */
+    if (shouldShowComplete && !hasCompletedRef.current) {
+      hasCompletedRef.current = true;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowNotification(true);
       onComplete?.();
-      /* eslint-enable react-hooks/set-state-in-effect */
+      const timer = setTimeout(() => setShowNotification(false), 3000);
+      return () => clearTimeout(timer);
+    } else if (!shouldShowComplete) {
+      hasCompletedRef.current = false;
     }
   }, [shouldShowComplete, onComplete]);
 
