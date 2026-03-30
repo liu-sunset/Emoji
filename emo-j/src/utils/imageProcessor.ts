@@ -33,54 +33,58 @@ function loadImage(imageUrl: string): Promise<HTMLImageElement> {
 }
 
 function sliceImageByGrid(imageUrl: string): Promise<SliceResult[]> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const img = await loadImage(imageUrl);
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        reject(new Error('无法获取 Canvas 上下文'));
-        return;
-      }
+  return new Promise((resolve, reject) => {
+    const executeSlice = async () => {
+      try {
+        const img = await loadImage(imageUrl);
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('无法获取 Canvas 上下文'));
+          return;
+        }
 
-      const imgWidth = img.naturalWidth;
-      const imgHeight = img.naturalHeight;
-      const offsetX = imgWidth * SPLIT_OFFSET;
-      const adjustedWidth = imgWidth - offsetX;
-      const cellWidth = adjustedWidth / COLS;
-      const cellHeight = imgHeight / ROWS;
+        const imgWidth = img.naturalWidth;
+        const imgHeight = img.naturalHeight;
+        const offsetX = imgWidth * SPLIT_OFFSET;
+        const adjustedWidth = imgWidth - offsetX;
+        const cellWidth = adjustedWidth / COLS;
+        const cellHeight = imgHeight / ROWS;
 
-      const results: SliceResult[] = [];
+        const results: SliceResult[] = [];
 
-      for (let row = 0; row < ROWS; row++) {
-        for (let col = 0; col < COLS; col++) {
-          const index = row * COLS + col;
-          const sx = offsetX + col * cellWidth;
-          const sy = row * cellHeight;
+        for (let row = 0; row < ROWS; row++) {
+          for (let col = 0; col < COLS; col++) {
+            const index = row * COLS + col;
+            const sx = offsetX + col * cellWidth;
+            const sy = row * cellHeight;
 
-          canvas.width = cellWidth;
-          canvas.height = cellHeight;
+            canvas.width = cellWidth;
+            canvas.height = cellHeight;
 
-          ctx.drawImage(img, sx, sy, cellWidth, cellHeight, 0, 0, cellWidth, cellHeight);
+            ctx.drawImage(img, sx, sy, cellWidth, cellHeight, 0, 0, cellWidth, cellHeight);
 
-          const blob = await new Promise<Blob | null>((res) =>
-            canvas.toBlob(res, 'image/png', 1.0)
-          );
+            const blob = await new Promise<Blob | null>((res) =>
+              canvas.toBlob(res, 'image/png', 1.0)
+            );
 
-          if (blob) {
-            results.push({ blob, index });
-          } else {
-            reject(new Error(`第 ${index + 1} 张切片生成失败`));
-            return;
+            if (blob) {
+              results.push({ blob, index });
+            } else {
+              reject(new Error(`第 ${index + 1} 张切片生成失败`));
+              return;
+            }
           }
         }
-      }
 
-      results.sort((a, b) => a.index - b.index);
-      resolve(results);
-    } catch (err) {
-      reject(err);
-    }
+        results.sort((a, b) => a.index - b.index);
+        resolve(results);
+      } catch (err) {
+        reject(err);
+      }
+    };
+
+    executeSlice();
   });
 }
 

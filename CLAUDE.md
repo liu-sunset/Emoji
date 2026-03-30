@@ -59,6 +59,22 @@ d:\thought\emoj\
 │   ├── index.js              # 云函数入口
 │   └── package.json
 │
+├── tests/                    # Playwright 测试脚本
+│   ├── test_plan.py          # 测试计划主脚本
+│   ├── integration_test.py   # 集成测试
+│   ├── test_modules/         # 各模块测试
+│   │   ├── login_test.py
+│   │   ├── upload_test.py
+│   │   ├── prompt_test.py
+│   │   ├── generate_test.py
+│   │   └── export_test.py
+│   ├── cloud_tests/          # 云端测试
+│   │   ├── scf_test.py
+│   │   └── cos_test.py
+│   ├── performance_tests/    # 性能测试
+│   │   └── load_test.py
+│   └── reports/              # 测试报告
+│
 └── .trae/                    # Trae IDE 配置
     ├── specs/emoj-generator/  # 项目规范文档
     │   ├── spec.md           # 功能规范
@@ -186,6 +202,8 @@ DAILY_LIMIT=10
 - [x] ResultViewer 和 ExportPanel 高度统一为 400px
 - [x] 添加本地测试服务器 (local-server.js)
 - [x] 异步抠图处理机制 (Web Worker + 任务队列)
+- [x] Playwright 端到端测试框架
+- [x] 全面测试计划与测试脚本
 
 ### 待完成 ⏳
 
@@ -322,130 +340,89 @@ npm run dev
 
 ***
 
+## 测试指南
+
+### 测试框架
+
+本项目使用 Playwright 进行端到端自动化测试。
+
+### 测试环境准备
+
+```bash
+# 创建虚拟环境
+cd d:\thought\emoj
+python -m venv venv
+
+# 安装 Playwright（项目级）
+venv\Scripts\pip install playwright
+venv\Scripts\python -m playwright install chromium --with-deps
+```
+
+### 运行测试
+
+```bash
+# 启动前端开发服务器
+cd emo-j
+npm run dev
+
+# 运行集成测试
+cd ..
+venv\Scripts\python tests/integration_test.py
+
+# 运行模块测试
+venv\Scripts\python tests/test_modules/login_test.py
+venv\Scripts\python tests/test_modules/upload_test.py
+venv\Scripts\python tests/test_modules/prompt_test.py
+venv\Scripts\python tests/test_modules/generate_test.py
+venv\Scripts\python tests/test_modules/export_test.py
+
+# 运行云端测试（需配置环境变量）
+set VITE_API_BASE_URL=https://your-scf-url.tencentyun.com
+venv\Scripts\python tests/cloud_tests/scf_test.py
+venv\Scripts\python tests/cloud_tests/cos_test.py
+
+# 运行性能测试
+venv\Scripts\python tests/performance_tests/load_test.py
+```
+
+### 测试用例覆盖
+
+| 模块 | 用例数 | 覆盖功能 |
+|-----|-------|---------|
+| 登录模块 | 5 | 密码验证、自动登录、退出登录 |
+| 图片上传模块 | 9 | 拖拽上传、格式校验、大小限制 |
+| 提示词编辑模块 | 12 | 风格选择、气泡预设、自定义编辑 |
+| 生成与结果模块 | 12 | 按钮状态、加载状态、错误处理 |
+| 导出面板模块 | 17 | 分割预览、抠图处理、批量导出 |
+| SCF云函数测试 | 10 | 部署验证、并发测试、日志检查 |
+| COS部署测试 | 8 | 资源加载、CORS配置、SSL验证 |
+| 性能测试 | 10 | 响应时间、负载测试、资源占用 |
+| **总计** | **90+** | **全面覆盖** |
+
+### 测试报告
+
+详细测试计划请查看: [.trae/documents/EMO.J项目全面测试计划.md](./.trae/documents/EMO.J项目全面测试计划.md)
+
+***
+
 ## 更新日志
 
+### 2026-03-30
+
+- **全面测试**: 完成EMO.J项目全面测试计划
+  - 修复 ESLint 错误 (ProgressDisplay组件、imageProcessor工具)
+  - 创建测试目录结构 `tests/`
+  - 编写登录模块测试脚本
+  - 编写图片上传模块测试脚本
+  - 编写提示词编辑模块测试脚本
+  - 编写生成与结果查看模块测试脚本
+  - 编写导出面板模块测试脚本
+  - 编写SCF云函数测试脚本
+  - 编写COS/CloudBase部署测试脚本
+  - 编写性能与负载测试脚本
+  - 执行本地集成测试（5/5通过）
+  - 响应式布局测试（桌面、笔记本、平板、手机全部通过）
+  - 编译检查通过，生产构建成功
+
 ### 2026-03-29 (修复)
-
-- **Bug 修复**: ResultViewer 固定高度限制响应式布局问题
-  - 将 `.result-viewer` 的 `height: 400px` 改为 `min-height: 400px`
-  - 添加移动端媒体查询适配（768px 断点）
-  - 移动端容器高度调整为 320px，内边距调整为 16px
-  - 确保在小屏幕设备上内容不会溢出，保持良好的响应式体验
-  - 编译检查通过，生产构建成功
-
-### 2026-03-29
-
-- **UI 重新设计**: 从"黑绿科技风"转变为"极简手绘线条 + Anthropic 风格"
-  - 全面更新配色系统：白色/浅灰背景、黑色细线条边框、珊瑚红强调色
-  - 引入手绘风格虚线边框 (dashed border) 作为主要装饰元素
-  - 登录页面：手绘虚线边框卡片居中设计
-  - 所有按钮：使用边框按钮代替渐变背景按钮，悬停时填充强调色
-  - 上传区域：手绘虚线边框，拖拽时边框变为珊瑚红
-  - 风格选项卡片：使用虚线边框，选中时高亮
-  - 进度条：简洁单色设计
-  - 保持所有功能不变，仅变更视觉风格
-  - 编译检查通过，生产构建成功
-
-### 2026-03-29 (下午)
-
-- **Prompt 优化**：针对文字模糊问题优化抠图效果
-  - 在 prompt 中明确要求气泡文字必须清晰锐利，不能有任何模糊或虚化效果
-  - 强调气泡文字边缘必须清晰，文字颜色与气泡背景形成高对比度（建议使用黑色或深色文字）
-  - 要求气泡轮廓必须清晰，气泡边框与绿色背景形成明显分界
-  - 强调人物头发丝、衣物边缘等细节必须清晰，不能有模糊或融合到背景中
-  - 要求所有前景元素 (人物、气泡、文字) 都必须与绿色背景有明显的颜色分界线
-  - 增加约束：确保气泡文字完整显示在气泡内，不能被裁切或超出气泡边界
-  - 要求白色边框宽度至少 3px，增强边缘识别度
-  - 此优化可显著改善文字气泡被模糊的问题，提升抠图边缘质量
-
-- **重大改进**：异步抠图处理机制 - 解决界面阻塞问题
-  - 实现 Web Worker 后台处理，抠图任务在独立线程执行，不阻塞主线程
-  - 新增 `mattingWorker.ts` - Web Worker 脚本，处理 AI 背景移除
-  - 新增 `taskQueueManager.ts` - 任务队列管理器，支持多任务并发处理（最多2个并发）
-  - 新增 `ProgressDisplay` 组件 - 实时进度显示，包含进度条、百分比、当前处理状态
-  - 新增 `notifications.ts` - 浏览器通知工具，任务完成后自动通知
-  - 重构 `ExportPanel` 组件 - 集成异步任务系统，移除同步阻塞代码
-  - 支持任务取消功能 - 用户可随时终止处理
-  - 实现任务状态实时更新 - 包括"处理中"、"完成"、"失败"、"已取消"状态
-  - 确保用户可在抠图过程中继续使用网站其他功能
-  - 配置 Vite 打包 Worker 支持
-
-### 2026-03-29 (上午)
-
-- **Prompt 优化**：添加背景颜色特征要求，优化抠图效果
-  - 在 prompt 中明确要求生成纯绿色背景 (#00FF00)
-  - 强调主体与背景必须有明显分界，便于 AI 抠图算法识别
-  - 要求背景为高对比度纯色，不能使用渐变、纹理或复杂图案
-  - 说明纯绿色背景与前景形成强烈对比，确保抠图时准确分离主体
-  - 此优化可显著改善文字气泡、头发等细节的抠图效果
-
-- **重大改进**：抠图功能升级 - 实现真正的透明背景
-  - 集成 `@imgly/background-removal` AI 背景移除库
-  - 使用 AI 技术自动识别前景主体并移除背景
-  - 批量抠图时显示处理进度（"正在处理第 X/Y 张..."）
-  - 输出真正的透明背景 PNG 图片（移除白色边框/背景）
-  - 保留表情包主体边缘细节
-
-- **功能简化**：移除单个图片抠图功能
-  - 删除单个图片的区域选择抠图功能
-  - 仅保留批量自动抠图功能，简化用户操作
-  - 保留单个清除抠图结果的功能
-
-- **BUG 修复**：修复抠图后预览无法正常显示的问题
-  - 添加 useEffect 监听 `mattingPreviews` 状态变化
-  - 修复 `mattingPreviewUrls` 和 `mattingPreviews` 状态未关联的问题
-  - 优化 `getPreviewUrl` 函数逻辑，正确获取抠图预览 URL
-
-- **BUG 修复**：修复分割后子图原图无法显示的问题
-  - 将预览 URL 存储从数组改为 Map（索引 -> URL）
-  - 避免数组索引对应关系错误导致的图片无法显示
-  - 简化 `getPreviewUrl` 函数逻辑，直接使用 Map.get 获取 URL
-
-### 2026-03-28
-
-- **新增功能**：抠图功能模块
-  - 添加用户可控的抠图功能启用/禁用开关
-  - 实现区域选择功能：支持批量处理和单个处理两种操作模式
-  - 为每个设置了抠图区域的子图提供抠图效果预览
-  - 导出规则：已使用抠图的子图导出抠图后图像，未使用的导出原始分割图像
-  - 添加"一键导出所有抠图图像"功能按钮
-  - 添加"一键导出所有原始分割图像"功能按钮
-- 重构 PromptEditor 组件为选择式编辑模式
-- 新增 promptConfig.ts 配置文件，包含风格、气泡文字预设
-- 所有选择都是可选的，默认值即为原始 prompt 效果
-- 移除 App.tsx 中单独的 bubbleTexts 状态
-- 图片尺寸从 1:1 比例改为 2000px \* 2000px 固定尺寸
-- 单个表情包和气泡文字宽高不超过 500px
-- 相邻表情包间距不低于 120px
-- 风格提供 7 个预设选项 + 1 个自定义输入选项
-- 移除了自定义完整编辑模式入口，改为各模块内的自定义输入
-- 增强 prompt 中对表情包分割完整性的约束描述，避免表情跨越格子边界
-- **重大变更**: 生成透明背景的6宫格图片（2行3列，带分割线），移除背景渐变选项
-- 新增 imageProcessor.ts 实现图片分割和抠图功能
-- 导出流程变更：生成预览 → 分割 → 抠图 → 展示抠图结果 → 一键导出
-- 优化裁切策略，扩大 padding 值至 40，并使用动态 padding 确保表情包完整性
-- **布局变更**: 从9宫格（3x3）改为6宫格（2x3），气泡文字从9个减少为6个
-- **新增功能**: 原图下载功能 - 在 ResultViewer 中添加下载按钮，支持下载 AI 生成的完整图片
-- **UI优化**: 预览关闭按钮位置从图片右上角调整为设备右上角 (viewport fixed)
-- **新增功能**: 预览导航功能 - 添加"上一张/下一张"导航按钮，支持平滑过渡动画
-- **BUG修复**: 修复同一照片多次生成后预览不更新的问题 - 添加 useEffect 监听 imageUrl 变化重置状态
-- **UI优化**: 优化整体布局间距，移除冗余 hover 效果，提升视觉紧凑感
-
-### 2026-03-27
-
-- 添加 `hasStartedGeneration` 状态追踪生成流程
-- 结果区域现在只在用户点击生成按钮后显示
-- 统一 ResultViewer 和 ExportPanel 容器高度为 400px
-
-### 2026-03-26
-
-- 完成前端页面重新设计 (黑绿配色 + 苹果风格)
-- 更新所有 CSS 文件使用新的设计系统
-- 验证构建和开发服务器正常运行
-
-### 2026-03-25
-
-- 完成核心功能开发
-- 实现 9 宫格剪切和 ZIP 导出
-- 集成阿里云百炼 API
 
