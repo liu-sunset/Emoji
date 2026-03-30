@@ -1,7 +1,6 @@
 const axios = require('axios');
 
-const DAILY_LIMIT = parseInt(process.env.DAILY_LIMIT) || 999999;
-
+const DAILY_LIMIT = parseInt(process.env.DAILY_LIMIT) || 10;
 const rateLimitStore = new Map();
 
 function getDailyKey(ip) {
@@ -134,7 +133,7 @@ async function main(event, context) {
 
   const password = authHeader.replace(/^Bearer\s+/i, '');
 
-  if (!password || password !== process.env.ACCESS_PASSWORD) {
+  if (!password || password !== (process.env.ACCESS_PASSWORD || 'emo123')) {
     response.statusCode = 401;
     response.body = JSON.stringify({
       success: false,
